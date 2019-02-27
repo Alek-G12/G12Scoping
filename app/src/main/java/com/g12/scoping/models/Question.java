@@ -1,14 +1,24 @@
 package com.g12.scoping.models;
 
+
 import java.util.List;
 
+/**
+ * This Class has two constructors.
+ * If the Question type is QuestionType.CHOICE 2nd constructor should be used providing the answers.
+ * If it is any other type of question, type should be provided as an argument and the answer list
+ * will be null.
+ */
+
 public class Question {
-    private QuestionType type;
+    public static final int BOOL = 0, CHOICE = 1, INPUT_TEXT = 2, INPUT_NUMERIC = 3;
+    
+    private int type;
     private String name;
     private String text;
     private List<String> answers;
     
-    public Question(QuestionType type, String name, String text){
+    public Question(int type, String name, String text){
         this.type = type;
         this.name = name;
         this.text = text;
@@ -16,13 +26,13 @@ public class Question {
     }
     
     public Question(String name, String text, List<String> answers){
-        this.type = QuestionType.CHOICE;
+        this.type = Question.CHOICE;
         this.name = name;
         this.text = text;
         this.answers = answers;
     }
     
-    public QuestionType getType(){
+    public int getType(){
         return type;
     }
     
@@ -39,6 +49,3 @@ public class Question {
     }
 }
 
-enum QuestionType{
-    BOOL, CHOICE, INPUT_TEXT, INPUT_NUMERIC
-}

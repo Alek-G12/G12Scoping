@@ -13,13 +13,14 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="preferencesFileKey">com.g12.scoping.preferences</string>
 
-    <array name="EquipmentTypes">
+    <string-array name="EquipmentTypes">
         <item>Filter</item>
         <item>Exchanger</item>
         <item>Air Receiver</item>
         <item>Vessel</item>
         <item>Tank</item>
         <item>Pipe</item>
-    </array>
+    </string-array>
 </resources>
