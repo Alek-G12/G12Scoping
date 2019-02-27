@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Inspection>
+    <Section name="General">
+        <Question name="manway_present" type="bool">Manway available?
+            <Question name="manway_type" type="choice">Manway type:
+                <Answer>Scaffold</Answer>
+                <Answer>Manlift - Drivable</Answer>
+                <Answer>Manlift - towable</Answer>
+            </Question>
+        </Question>
+        <Question name="notes" type="input_text">Additional notes</Question>
+        <Question name="operating_temp" type="input_number">Operating Temperature</Question>
+    </Section>
+</Inspection>
