@@ -5,33 +5,45 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.g12.scoping.models.Inspection;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
 import io.realm.Realm;
+import io.realm.RealmQuery;
+import io.realm.RealmResults;
 
 public class MainActivity extends AppCompatActivity {
     
     //UI references
-    private FloatingActionButton fab;
+    private FloatingActionButton mFab;
     private EditText mEquipmentName;
     private Spinner mEquipmentTypeSpinner;
+    private RecyclerView mInspectionRecyclerView;
+    private Realm realm;
+    private SharedPreferences sharedPreferences;
     
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -40,14 +52,34 @@ public class MainActivity extends AppCompatActivity {
     
         //Initialize Realm
         Realm.init(this);
-        
-        //Kick off the Login Activity
-        Intent loginIntent = new Intent(this, LoginActivity.class);
-        startActivity(loginIntent);
+        realm = Realm.getDefaultInstance();
     
+        //Get Shared References
+        sharedPreferences = this.getSharedPreferences(getString(R.string.preferencesFileKey),
+                                                      Context.MODE_PRIVATE);
+    
+        //Kick off the Login Activity if no active session
+        //TODO: implement the Logging out process
+        if(!sharedPreferences.getBoolean("active", false)){
+            Intent loginIntent = new Intent(this, LoginActivity.class);
+            startActivity(loginIntent);
+        }
+        
         //Get the UI Instances
-        fab = findViewById(R.id.fab);
-        fab.setOnClickListener(fabOnClickListener);
+        initRecycleView();
+        mFab = findViewById(R.id.fab);
+        mFab.setOnClickListener(fabOnClickListener);
+    }
+    
+    private void initRecycleView(){
+        mInspectionRecyclerView = findViewById(R.id.inspectionRecyclerView);
+        mInspectionRecyclerView.setHasFixedSize(true);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        mInspectionRecyclerView.setLayoutManager(layoutManager);
+        RealmQuery<Inspection> query = realm.where(Inspection.class);
+        RealmResults<Inspection> inspectionList = query.findAll();
+        RecyclerView.Adapter adapter = new InspectionAdapter(inspectionList);
+        mInspectionRecyclerView.setAdapter(adapter);
     }
     
     private View.OnClickListener fabOnClickListener = new View.OnClickListener() {
@@ -100,15 +132,11 @@ public class MainActivity extends AppCompatActivity {
         sdf.setTimeZone(TimeZone.getDefault());
         String dateCreated = sdf.format(new Date());
         ////User
-        SharedPreferences sharedPreferences = this.getSharedPreferences(
-                getString(R.string.preferencesFileKey), Context.MODE_PRIVATE);
         String createdBy = sharedPreferences.getString("user", null);
-        
         //Save the Inspection to the Database
-        Realm realm = Realm.getDefaultInstance();
         realm.beginTransaction();
         try{
-            Inspection inspection = new Inspection(Inspection.getEquipmentType(type), name,
+            Inspection inspection = new Inspection(Inspection.parseEquipmentType(type), name,
                                                    dateCreated, createdBy);
             realm.insert(inspection);
             realm.commitTransaction();
@@ -120,4 +148,80 @@ public class MainActivity extends AppCompatActivity {
         
     }
     
+    private class InspectionAdapter
+            extends RecyclerView.Adapter<InspectionAdapter.InspectionViewHolder> {
+        private List<Inspection> inspectionList;
+        
+        private InspectionAdapter(List<Inspection> inspectionList){
+            this.inspectionList = inspectionList;
+        }
+        
+        @NonNull
+        @Override
+        public InspectionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType){
+            View view = LayoutInflater.from(parent.getContext()).inflate(
+                    R.layout.inspection_list_item, parent, false);
+            InspectionViewHolder viewHolder = new InspectionViewHolder(view);
+            return viewHolder;
+        }
+        
+        @Override
+        public void onBindViewHolder(@NonNull InspectionViewHolder holder, int position){
+            Inspection inspection = inspectionList.get(position);
+            holder.inspectionName.setText(inspection.getName());
+            try{
+                holder.equipmentType.setText(
+                        Inspection.parseEquipmentType(inspection.getEquipmentType()));
+            } catch(Exception e){
+                Log.e("db", "Error parsing Equipment type");
+            }
+            holder.nameCreated.setText(inspection.getCreatedBy());
+            holder.dateCreated.setText(inspection.getDateCreated());
+            holder.nameModified.setText(inspection.getModifiedBy());
+            holder.dateModified.setText(inspection.getDateModified());
+            //TODO: Add Logic to display correct icon
+            switch(inspection.getEquipmentType()){
+                case Inspection.FILTER:
+                    break;
+                case Inspection.EXCHANGER:
+                    break;
+                case Inspection.AIR_RECEIVER:
+                    holder.inspectionIcon.setImageResource(R.mipmap.icon_airreceiver);
+                    break;
+                case Inspection.VESSEL:
+                    break;
+                case Inspection.TANK:
+                    holder.inspectionIcon.setImageResource(R.mipmap.icon_tank);
+                    break;
+                case Inspection.PIPE:
+                    break;
+            }
+        }
+        
+        @Override
+        public int getItemCount(){
+            return inspectionList.size();
+        }
+        
+        private class InspectionViewHolder extends RecyclerView.ViewHolder {
+            private TextView inspectionName;
+            private TextView equipmentType;
+            private TextView nameCreated;
+            private TextView dateCreated;
+            private TextView nameModified;
+            private TextView dateModified;
+            private ImageView inspectionIcon;
+            
+            private InspectionViewHolder(View v){
+                super(v);
+                inspectionName = v.findViewById(R.id.inspectionName);
+                equipmentType = v.findViewById(R.id.eqDescriptor);
+                nameCreated = v.findViewById(R.id.nameCreated);
+                dateCreated = v.findViewById(R.id.dateCreated);
+                nameModified = v.findViewById(R.id.nameModified);
+                dateModified = v.findViewById(R.id.dateModified);
+                inspectionIcon = v.findViewById(R.id.inspectionIcon);
+            }
+        }
+    }
 }

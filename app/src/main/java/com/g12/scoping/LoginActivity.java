@@ -328,6 +328,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         getString(R.string.preferencesFileKey), Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString("user", mEmail);
+                editor.putBoolean("active", true);
                 editor.commit();
                 finish();
             } else {

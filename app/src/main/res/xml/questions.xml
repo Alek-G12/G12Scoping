@@ -2,14 +2,39 @@
 <Inspection>
     <Equipment type="Tank">
         <Section name="General">
-            <Question name="manway_available" type="bool">Manway available?</Question>
-            <Question name="manway_type" type="choice">Manway type:
+            <Question
+                name="manway_available"
+                type="bool"
+                text="Manway available?" />
+            <Question
+                name="manway_type"
+                type="choice"
+                text="Manway type:">
                 <Answer>Scaffold</Answer>
                 <Answer>Manlift - Drivable</Answer>
                 <Answer>Manlift - towable</Answer>
             </Question>
-            <Question name="additional_notes" type="input_text">Additional notes</Question>
-            <Question name="operating_temperature" type="input_number">Operating Temperature</Question>
+            <Question
+                name="additional_notes"
+                type="input_text"
+                text="Additional notes" />
+            <Question
+                name="operating_temperature"
+                type="input_number"
+                text="Operating Temperature" />
         </Section>
+        <Section>
+            <Section name="Insulation">
+
+            </Section>
+        </Section>
+    </Equipment>
+    <Equipment type="Vessel">
+        <Section name="Data Plate">
+            <Question>
+
+            </Question>
+        </Section>
+
     </Equipment>
 </Inspection>

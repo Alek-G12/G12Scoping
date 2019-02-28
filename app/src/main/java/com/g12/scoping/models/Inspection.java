@@ -26,6 +26,10 @@ public class Inspection extends RealmObject {
         this.modifiedBy = createdBy;
     }
     
+    public int getEquipmentType(){
+        return equipmentType;
+    }
+    
     public long getUniqueId(){ return uniqueId;}
     
     public String getName(){
@@ -58,7 +62,7 @@ public class Inspection extends RealmObject {
     }
     
     
-    public static int getEquipmentType(String type) throws Exception{
+    public static int parseEquipmentType(String type) throws Exception{
         switch(type){
             case "Filter":
                 return Inspection.FILTER;
@@ -76,4 +80,24 @@ public class Inspection extends RealmObject {
                 throw new Exception("Wrong Equipment Type");
         }
     }
+    
+    public static String parseEquipmentType(int type) throws Exception{
+        switch(type){
+            case FILTER:
+                return "Filter";
+            case EXCHANGER:
+                return "Exchanger";
+            case AIR_RECEIVER:
+                return "Air Receiver";
+            case VESSEL:
+                return "Vessel";
+            case TANK:
+                return "Tank";
+            case PIPE:
+                return "Pipe";
+            default:
+                throw new Exception("Wrong Equipment Type");
+        }
+    }
+    
 }
