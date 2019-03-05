@@ -25,16 +25,18 @@
         </Section>
         <Section>
             <Section name="Insulation">
-
             </Section>
         </Section>
     </Equipment>
     <Equipment type="Vessel">
         <Section name="Data Plate">
             <Question>
-
             </Question>
         </Section>
+    </Equipment>
+    <Equipment type="Air Receiver">
+        <Section name="section">
 
+        </Section>
     </Equipment>
 </Inspection>

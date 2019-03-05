@@ -1,12 +1,16 @@
 package com.g12.scoping;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -26,9 +30,12 @@ import android.widget.Toast;
 import com.g12.scoping.models.Inspection;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.TimeZone;
 
 import io.realm.Realm;
@@ -37,51 +44,22 @@ import io.realm.RealmResults;
 
 public class MainActivity extends AppCompatActivity {
     
-    //UI references
+    private static final int REQUEST_READ_EXTERNAL_STORAGE = 1;
+    private SharedPreferences sharedPreferences;
+    private Set<String> types;
+    
+    /**
+     * UI References
+     */
     private FloatingActionButton mFab;
     private EditText mEquipmentName;
     private Spinner mEquipmentTypeSpinner;
     private RecyclerView mInspectionRecyclerView;
     private Realm realm;
-    private SharedPreferences sharedPreferences;
     
-    @Override
-    protected void onCreate(Bundle savedInstanceState){
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-    
-        //Initialize Realm
-        Realm.init(this);
-        realm = Realm.getDefaultInstance();
-    
-        //Get Shared References
-        sharedPreferences = this.getSharedPreferences(getString(R.string.preferencesFileKey),
-                                                      Context.MODE_PRIVATE);
-    
-        //Kick off the Login Activity if no active session
-        //TODO: implement the Logging out process
-        if(!sharedPreferences.getBoolean("active", false)){
-            Intent loginIntent = new Intent(this, LoginActivity.class);
-            startActivity(loginIntent);
-        }
-        
-        //Get the UI Instances
-        initRecycleView();
-        mFab = findViewById(R.id.fab);
-        mFab.setOnClickListener(fabOnClickListener);
-    }
-    
-    private void initRecycleView(){
-        mInspectionRecyclerView = findViewById(R.id.inspectionRecyclerView);
-        mInspectionRecyclerView.setHasFixedSize(true);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-        mInspectionRecyclerView.setLayoutManager(layoutManager);
-        RealmQuery<Inspection> query = realm.where(Inspection.class);
-        RealmResults<Inspection> inspectionList = query.findAll();
-        RecyclerView.Adapter adapter = new InspectionAdapter(inspectionList);
-        mInspectionRecyclerView.setAdapter(adapter);
-    }
-    
+    /**
+     * OnClick Listeners implementations
+     */
     private View.OnClickListener fabOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v){
@@ -89,21 +67,6 @@ public class MainActivity extends AppCompatActivity {
             newInspectionDialog.show();
         }
     };
-    
-    private AlertDialog createNewInspectionDialog(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.fragment_new_inspection, null);
-        mEquipmentName = dialogView.findViewById(R.id.eamName);
-        mEquipmentTypeSpinner = dialogView.findViewById(R.id.equipmentType);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                                                                             R.array.EquipmentTypes,
-                                                                             android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mEquipmentTypeSpinner.setAdapter(adapter);
-        builder.setTitle("New Inspection").setMessage("Create a new equipment inspection").setView(
-                dialogView).setPositiveButton("Create", newInspectionDialogOnClickListener);
-        return builder.create();
-    }
     
     private DialogInterface.OnClickListener newInspectionDialogOnClickListener = new DialogInterface.OnClickListener() {
         @Override
@@ -125,31 +88,142 @@ public class MainActivity extends AppCompatActivity {
         }
     };
     
+    @Override
+    protected void onCreate(Bundle savedInstanceState){
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+    
+        Realm.init(this);
+        realm = Realm.getDefaultInstance();
+    
+        sharedPreferences = this.getSharedPreferences(getString(R.string.preferencesFileKey),
+                                                      Context.MODE_PRIVATE);
+    
+        //Kick off the Login Activity if no active session
+        if(!sharedPreferences.getBoolean("active", false)){
+            Intent loginIntent = new Intent(this, LoginActivity.class);
+            startActivity(loginIntent);
+        }
+    
+        loadEquipmentTypes();
+        initUI();
+    }
+    
+    @Override
+    public void onBackPressed(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Exit App").setMessage(
+                "Are you sure? You will be logged out and the app will close").setPositiveButton(
+                "Exit", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which){
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putBoolean("active", false);
+                        editor.apply();
+                        MainActivity.super.onBackPressed();
+                    }
+                });
+        builder.show();
+    }
+    
+    /**
+     * Set the User Interface, register onClickListeners, etc...
+     */
+    private void initUI(){
+        //Floating Button
+        mFab = findViewById(R.id.fab);
+        mFab.setOnClickListener(fabOnClickListener);
+        
+        //Inspection Recycler View
+        mInspectionRecyclerView = findViewById(R.id.inspectionRecyclerView);
+        mInspectionRecyclerView.setHasFixedSize(true);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        mInspectionRecyclerView.setLayoutManager(layoutManager);
+        
+        //Fill the Inspection List ^
+        RealmQuery<Inspection> query = realm.where(Inspection.class);
+        RealmResults<Inspection> inspectionList = query.findAll();
+        RecyclerView.Adapter adapter = new InspectionAdapter(inspectionList);
+        mInspectionRecyclerView.setAdapter(adapter);
+    }
+    
+    /**
+     * Check if there is an equipment types list, if there's not, ask the user for permission
+     * to read the file and fire an async task to read it.
+     */
+    private void loadEquipmentTypes(){
+        types = sharedPreferences.getStringSet("types", null);
+        if(types == null){
+            String permission = Manifest.permission.READ_EXTERNAL_STORAGE;
+            Log.d("EqLst", "Equipment List NOT Found");
+            Log.d("Perm", "Checking Permission READ_EXTERNAL_STORAGE");
+            if(ContextCompat.checkSelfPermission(this,
+                                                 permission) != PackageManager.PERMISSION_GRANTED){
+                Log.d("Perm", "Prompting User for Permission...");
+                ActivityCompat.requestPermissions(this, new String[]{permission},
+                                                  REQUEST_READ_EXTERNAL_STORAGE);
+            } else {
+                Log.d("Perm", "Permission was already granted");
+                LoadEquipmentTypes loadEquipmentTypes = new LoadEquipmentTypes(this);
+                loadEquipmentTypes.execute();
+            }
+        } else {
+            Log.d("EqLst", "Equipment List Found");
+        }
+    }
+    
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults){
+        switch(requestCode){
+            case REQUEST_READ_EXTERNAL_STORAGE:
+                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    Log.d("Perm", "Permission Granted by user");
+                    LoadEquipmentTypes loadEquipmentTypes = new LoadEquipmentTypes(this);
+                    loadEquipmentTypes.execute();
+                }
+                break;
+        }
+    }
+    
+    private AlertDialog createNewInspectionDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.fragment_new_inspection, null);
+        mEquipmentName = dialogView.findViewById(R.id.eamName);
+        mEquipmentTypeSpinner = dialogView.findViewById(R.id.equipmentType);
+        types = sharedPreferences.getStringSet("types", null);
+        ArrayAdapter<String> adapter = null;
+        List listTypes = new ArrayList<>(types);
+        Collections.sort(listTypes);
+        try{
+            adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,
+                                               listTypes);
+        } catch(NullPointerException e){
+            Log.d("EqLst", "Equipment List is null");
+        }
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mEquipmentTypeSpinner.setAdapter(adapter);
+        builder.setTitle("New Inspection").setMessage("Create a new equipment inspection").setView(
+                dialogView).setPositiveButton("Create", newInspectionDialogOnClickListener);
+        return builder.create();
+    }
+    
     private void createInspection(String name, String type){
         //Build Inspection Object
-        ////Date
-        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy 'at' hh:mm", Locale.US);
-        sdf.setTimeZone(TimeZone.getDefault());
-        String dateCreated = sdf.format(new Date());
         ////User
         String createdBy = sharedPreferences.getString("user", null);
         //Save the Inspection to the Database
         realm.beginTransaction();
-        try{
-            Inspection inspection = new Inspection(Inspection.parseEquipmentType(type), name,
-                                                   dateCreated, createdBy);
-            realm.insert(inspection);
-            realm.commitTransaction();
-            Log.d("DB", "Inspection Entry created");
-        } catch(Exception e){
-            Log.e("DB", "Wrong Equipment Type. Realm Transaction Canceled");
-            realm.cancelTransaction();
-        }
+        Inspection inspection = new Inspection(type, name, new Date(), createdBy);
+        realm.insert(inspection);
+        realm.commitTransaction();
+        Log.d("DB", "Inspection Entry created");
         
     }
     
     private class InspectionAdapter
             extends RecyclerView.Adapter<InspectionAdapter.InspectionViewHolder> {
+    
         private List<Inspection> inspectionList;
         
         private InspectionAdapter(List<Inspection> inspectionList){
@@ -168,34 +242,29 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull InspectionViewHolder holder, int position){
             Inspection inspection = inspectionList.get(position);
+            SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy 'at' hh:mm", Locale.US);
+            sdf.setTimeZone(TimeZone.getDefault());
             holder.inspectionName.setText(inspection.getName());
             try{
-                holder.equipmentType.setText(
-                        Inspection.parseEquipmentType(inspection.getEquipmentType()));
+                holder.equipmentType.setText(inspection.getEquipmentType());
             } catch(Exception e){
                 Log.e("db", "Error parsing Equipment type");
             }
             holder.nameCreated.setText(inspection.getCreatedBy());
-            holder.dateCreated.setText(inspection.getDateCreated());
+            holder.dateCreated.setText(sdf.format(inspection.getDateCreated()));
             holder.nameModified.setText(inspection.getModifiedBy());
-            holder.dateModified.setText(inspection.getDateModified());
-            //TODO: Add Logic to display correct icon
-            switch(inspection.getEquipmentType()){
-                case Inspection.FILTER:
-                    break;
-                case Inspection.EXCHANGER:
-                    break;
-                case Inspection.AIR_RECEIVER:
-                    holder.inspectionIcon.setImageResource(R.mipmap.icon_airreceiver);
-                    break;
-                case Inspection.VESSEL:
-                    break;
-                case Inspection.TANK:
-                    holder.inspectionIcon.setImageResource(R.mipmap.icon_tank);
-                    break;
-                case Inspection.PIPE:
-                    break;
-            }
+            holder.dateModified.setText(sdf.format(inspection.getDateModified()));
+            final String inspectionName = inspection.getName();
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v){
+                    Intent intent = new Intent(MainActivity.this, InspectionActivity.class);
+                    Toast.makeText(MainActivity.this, "Opening Inspection - " + inspectionName,
+                                   Toast.LENGTH_SHORT).show();
+                    //TODO: Add Intent Extras needed for Inspection Activity
+                    startActivity(intent);
+                }
+            });
         }
         
         @Override

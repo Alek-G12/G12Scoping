@@ -1,22 +1,25 @@
 package com.g12.scoping.models;
 
+import java.util.Date;
+
+import io.realm.RealmList;
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 public class Inspection extends RealmObject {
-    public static final int FILTER = 0, EXCHANGER = 1, AIR_RECEIVER = 2, VESSEL = 3, TANK = 4, PIPE = 5;
     
-    private long uniqueId;
-    private int equipmentType;
+    @PrimaryKey
     private String name;
-    private String dateCreated;
+    private String equipmentType;
+    private Date dateCreated;
     private String createdBy;
-    private String dateModified;
+    private Date dateModified;
     private String modifiedBy;
+    private RealmList<Section> sections;
     
-    public Inspection(){ }
+    public Inspection(){}
     
-    public Inspection(int equipmentType, String name, String dateCreated, String createdBy){
-        this.uniqueId = System.currentTimeMillis();
+    public Inspection(String equipmentType, String name, Date dateCreated, String createdBy){
         this.equipmentType = equipmentType;
         this.name = name;
         this.dateCreated = dateCreated;
@@ -26,17 +29,15 @@ public class Inspection extends RealmObject {
         this.modifiedBy = createdBy;
     }
     
-    public int getEquipmentType(){
+    public String getEquipmentType(){
         return equipmentType;
     }
-    
-    public long getUniqueId(){ return uniqueId;}
     
     public String getName(){
         return name;
     }
     
-    public String getDateCreated(){
+    public Date getDateCreated(){
         return dateCreated;
     }
     
@@ -44,17 +45,16 @@ public class Inspection extends RealmObject {
         return createdBy;
     }
     
-    public String getDateModified(){
+    public Date getDateModified(){
         return dateModified;
+    }
+    
+    public void setDateModified(Date dateModified){
+        this.dateModified = dateModified;
     }
     
     public String getModifiedBy(){
         return modifiedBy;
-    }
-    
-    
-    public void setDateModified(String dateModified){
-        this.dateModified = dateModified;
     }
     
     public void setModifiedBy(String modifiedBy){
@@ -62,42 +62,11 @@ public class Inspection extends RealmObject {
     }
     
     
-    public static int parseEquipmentType(String type) throws Exception{
-        switch(type){
-            case "Filter":
-                return Inspection.FILTER;
-            case "Exchanger":
-                return Inspection.EXCHANGER;
-            case "Air Receiver":
-                return Inspection.AIR_RECEIVER;
-            case "Vessel":
-                return Inspection.VESSEL;
-            case "Tank":
-                return Inspection.TANK;
-            case "Pipe":
-                return Inspection.PIPE;
-            default:
-                throw new Exception("Wrong Equipment Type");
-        }
+    public RealmList<Section> getSections(){
+        return sections;
     }
     
-    public static String parseEquipmentType(int type) throws Exception{
-        switch(type){
-            case FILTER:
-                return "Filter";
-            case EXCHANGER:
-                return "Exchanger";
-            case AIR_RECEIVER:
-                return "Air Receiver";
-            case VESSEL:
-                return "Vessel";
-            case TANK:
-                return "Tank";
-            case PIPE:
-                return "Pipe";
-            default:
-                throw new Exception("Wrong Equipment Type");
-        }
+    public void setSections(RealmList<Section> sections){
+        this.sections = sections;
     }
-    
 }
