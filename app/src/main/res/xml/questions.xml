@@ -10,9 +10,9 @@
                 name="manway_type"
                 text="Manway type:"
                 type="choice">
-                <Answer text="Scafold" />
-                <Answer text="Manlift - Drivable" />
-                <Answer text="Manlift - towable" />
+                <Answer answer="Scafold" />
+                <Answer answer="Manlift - Drivable" />
+                <Answer answer="Manlift - towable" />
             </Question>
             <Question
                 name="additional_notes"

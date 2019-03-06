@@ -9,11 +9,9 @@ import android.util.Xml;
 import com.g12.scoping.models.CustomXMLParser;
 
 import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -62,10 +60,6 @@ class LoadEquipmentTypesTask extends AsyncTask<String, Void, List<String>> {
             Log.e("Parser", "Error Parsing XML");
         }
         return types;
-    }
-    
-    @Override
-    protected void onPreExecute(){
     }
     
     @Override

@@ -28,18 +28,6 @@ public class Question extends RealmObject {
         this.type = type;
         this.name = name;
         this.text = text;
-        switch(type){
-            case BOOL:
-                answers = new RealmList<>();
-                answers.add(new Answer("yes"));
-                answers.add(new Answer("No"));
-                selectedAnswer = null;
-                break;
-            default:
-                answers = null;
-                selectedAnswer = null;
-                break;
-        }
     }
     
     
@@ -71,7 +59,7 @@ public class Question extends RealmObject {
         this.selectedAnswer = selectedAnswer;
     }
     
-    public static int parseType(String type) throws Exception{
+    public static int parseType(String type) throws QuestionTypeException{
         switch(type){
             case "bool":
                 return BOOL;
@@ -82,8 +70,14 @@ public class Question extends RealmObject {
             case "input_numeric":
                 return INPUT_NUMERIC;
             default:
-                throw new Exception("Wrong Question Type");
+                throw new QuestionTypeException("Wrong Question Type");
         }
     }
+    
+    public static class QuestionTypeException extends Exception {
+        QuestionTypeException(String message){
+            super(message);
+        }
+    }
+    
 }
-
