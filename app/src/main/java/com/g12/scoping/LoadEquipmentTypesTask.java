@@ -3,7 +3,6 @@ package com.g12.scoping;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.util.Log;
 import android.util.Xml;
 
@@ -19,17 +18,17 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-class LoadEquipmentTypes extends AsyncTask<String, Void, List<String>> {
+class LoadEquipmentTypesTask extends AsyncTask<String, Void, List<String>> {
     private WeakReference<Context> contextWeakReference;
-    private File configFile;
     
-    LoadEquipmentTypes(Context context){
+    LoadEquipmentTypesTask(Context context){
         contextWeakReference = new WeakReference<>(context);
     }
     
     @Override
     protected List<String> doInBackground(String... strings){
         List<String> types = new ArrayList<>();
+        File configFile = new File(strings[0]);
         
         try{
             InputStream inputStream = new FileInputStream(configFile);
@@ -82,13 +81,6 @@ class LoadEquipmentTypes extends AsyncTask<String, Void, List<String>> {
     
     @Override
     protected void onPreExecute(){
-        Context context = contextWeakReference.get();
-        if(context != null){
-            //TODO: Remove hardcoded file and provide a user selected file as argument to doInBkgrnd
-            String configFile = Environment
-                    .getExternalStorageDirectory() + File.separator + "Scoping" + File.separator + "questions.xml";
-            this.configFile = new File(configFile);
-        }
     }
     
     @Override

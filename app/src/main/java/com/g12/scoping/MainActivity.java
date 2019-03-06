@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -29,10 +30,10 @@ import android.widget.Toast;
 
 import com.g12.scoping.models.Inspection;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1;
     private SharedPreferences sharedPreferences;
     private Set<String> types;
+    private File configFile;
     
     /**
      * UI References
@@ -98,6 +100,8 @@ public class MainActivity extends AppCompatActivity {
     
         sharedPreferences = this.getSharedPreferences(getString(R.string.preferencesFileKey),
                                                       Context.MODE_PRIVATE);
+        configFile = new File(Environment
+                                      .getExternalStorageDirectory() + File.separator + "Scoping" + File.separator + "questions.xml");
     
         //Kick off the Login Activity if no active session
         if(!sharedPreferences.getBoolean("active", false)){
@@ -164,8 +168,8 @@ public class MainActivity extends AppCompatActivity {
                                                   REQUEST_READ_EXTERNAL_STORAGE);
             } else {
                 Log.d("Perm", "Permission was already granted");
-                LoadEquipmentTypes loadEquipmentTypes = new LoadEquipmentTypes(this);
-                loadEquipmentTypes.execute();
+                LoadEquipmentTypesTask loadEquipmentTypesTask = new LoadEquipmentTypesTask(this);
+                loadEquipmentTypesTask.execute(configFile.getPath());
             }
         } else {
             Log.d("EqLst", "Equipment List Found");
@@ -179,8 +183,9 @@ public class MainActivity extends AppCompatActivity {
             case REQUEST_READ_EXTERNAL_STORAGE:
                 if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     Log.d("Perm", "Permission Granted by user");
-                    LoadEquipmentTypes loadEquipmentTypes = new LoadEquipmentTypes(this);
-                    loadEquipmentTypes.execute();
+                    LoadEquipmentTypesTask loadEquipmentTypesTask = new LoadEquipmentTypesTask(
+                            this);
+                    loadEquipmentTypesTask.execute();
                 }
                 break;
         }
@@ -210,13 +215,10 @@ public class MainActivity extends AppCompatActivity {
     
     private void createInspection(String name, String type){
         //Build Inspection Object
-        ////User
         String createdBy = sharedPreferences.getString("user", null);
-        //Save the Inspection to the Database
-        realm.beginTransaction();
-        Inspection inspection = new Inspection(type, name, new Date(), createdBy);
-        realm.insert(inspection);
-        realm.commitTransaction();
+        //Start Async Task to Create Inspection model and sub models from XML
+        CreateInspectionTask createInspectionTask = new CreateInspectionTask();
+        createInspectionTask.execute(type, name, createdBy, configFile.getPath());
         Log.d("DB", "Inspection Entry created");
         
     }
@@ -241,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
         
         @Override
         public void onBindViewHolder(@NonNull InspectionViewHolder holder, int position){
-            Inspection inspection = inspectionList.get(position);
+            final Inspection inspection = inspectionList.get(position);
             SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy 'at' hh:mm", Locale.US);
             sdf.setTimeZone(TimeZone.getDefault());
             holder.inspectionName.setText(inspection.getName());
@@ -262,6 +264,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Opening Inspection - " + inspectionName,
                                    Toast.LENGTH_SHORT).show();
                     //TODO: Add Intent Extras needed for Inspection Activity
+                    intent.putExtra("inspection", inspection.getName());
                     startActivity(intent);
                 }
             });
