@@ -4,28 +4,26 @@
         <Section name="General">
             <Question
                 name="manway_available"
-                type="bool"
-                text="Manway available?" />
+                text="Manway available?"
+                type="bool" />
             <Question
                 name="manway_type"
-                type="choice"
-                text="Manway type:">
-                <Answer>Scaffold</Answer>
-                <Answer>Manlift - Drivable</Answer>
-                <Answer>Manlift - towable</Answer>
+                text="Manway type:"
+                type="choice">
+                <Answer text="Scafold" />
+                <Answer text="Manlift - Drivable" />
+                <Answer text="Manlift - towable" />
             </Question>
             <Question
                 name="additional_notes"
-                type="input_text"
-                text="Additional notes" />
+                text="Additional notes"
+                type="input_text" />
             <Question
                 name="operating_temperature"
-                type="input_number"
-                text="Operating Temperature" />
+                text="Operating Temperature"
+                type="input_numeric" />
         </Section>
-        <Section>
-            <Section name="Insulation">
-            </Section>
+        <Section name="Insulation">
         </Section>
     </Equipment>
     <Equipment type="Vessel">
@@ -36,7 +34,6 @@
     </Equipment>
     <Equipment type="Air Receiver">
         <Section name="section">
-
         </Section>
     </Equipment>
 </Inspection>

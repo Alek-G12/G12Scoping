@@ -6,6 +6,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Xml;
 
+import com.g12.scoping.models.CustomXMLParser;
+
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -43,40 +45,23 @@ class LoadEquipmentTypesTask extends AsyncTask<String, Void, List<String>> {
             
             //Go over Every start Tag
             while(parser.next() != parser.END_DOCUMENT){
-                if(parser.nextTag() == parser.START_TAG){
+                if(parser.getEventType() == parser.START_TAG){
                     String tagName = parser.getName();
                     if(tagName.equals("Equipment")){
                         types.add(parser.getAttributeValue(null, "type"));
-                        Log.d("Parsingr",
+                        Log.d("Parser",
                               "Equipment Found! " + parser.getAttributeValue(null, "type"));
                     } else {
                         //Should Skip All Tags not in the same level
                         Log.d("Parser", "Skipping Tag");
-                        skip(parser);
+                        CustomXMLParser.skip(parser);
                     }
                 }
             }
         } catch(Exception e){
-            Log.e("Parsing", "Error Parsing XML");
+            Log.e("Parser", "Error Parsing XML");
         }
         return types;
-    }
-    
-    private void skip(XmlPullParser parser) throws XmlPullParserException, IOException{
-        if(parser.getEventType() != XmlPullParser.START_TAG){
-            throw new IllegalStateException();
-        }
-        int depth = 1;
-        while(depth != 0){
-            switch(parser.next()){
-                case XmlPullParser.END_TAG:
-                    depth--;
-                    break;
-                case XmlPullParser.START_TAG:
-                    depth++;
-                    break;
-            }
-        }
     }
     
     @Override

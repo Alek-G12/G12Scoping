@@ -20,24 +20,28 @@ public class Question extends RealmObject {
     private String name;
     private String text;
     private RealmList<Answer> answers;
-    private int selectedAnswer;
+    private Integer selectedAnswer;
     
     public Question(){}
     
-    public Question(int type, String name, String text, RealmList<Answer> answers){
+    public Question(int type, String name, String text){
         this.type = type;
         this.name = name;
         this.text = text;
-        this.selectedAnswer = 0;
+        switch(type){
+            case BOOL:
+                answers = new RealmList<>();
+                answers.add(new Answer("yes"));
+                answers.add(new Answer("No"));
+                selectedAnswer = null;
+                break;
+            default:
+                answers = null;
+                selectedAnswer = null;
+                break;
+        }
     }
     
-    public Question(String name, String text, RealmList<Answer> answers, int selected){
-        this.type = Question.CHOICE;
-        this.name = name;
-        this.text = text;
-        this.answers = answers;
-        this.selectedAnswer = selected;
-    }
     
     public int getType(){
         return type;
@@ -65,6 +69,21 @@ public class Question extends RealmObject {
     
     public void setSelectedAnswer(int selectedAnswer){
         this.selectedAnswer = selectedAnswer;
+    }
+    
+    public static int parseType(String type) throws Exception{
+        switch(type){
+            case "bool":
+                return BOOL;
+            case "choice":
+                return CHOICE;
+            case "input_text":
+                return INPUT_TEXT;
+            case "input_numeric":
+                return INPUT_NUMERIC;
+            default:
+                throw new Exception("Wrong Question Type");
+        }
     }
 }
 

@@ -5,6 +5,13 @@ import io.realm.RealmObject;
 public class Answer extends RealmObject {
     private String answer;
     
+    public Answer(){
+    }
+    
+    public Answer(String answer){
+        this.answer = answer;
+    }
+    
     public String getAnswer(){
         return answer;
     }

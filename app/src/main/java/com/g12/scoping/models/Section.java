@@ -7,6 +7,11 @@ public class Section extends RealmObject {
     private String name;
     private RealmList<Question> questions;
     
+    public Section(String name){
+        this.name = name;
+    }
+    public Section(){}
+    
     public String getName(){
         return name;
     }

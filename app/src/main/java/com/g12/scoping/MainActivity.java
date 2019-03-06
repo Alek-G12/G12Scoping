@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("Perm", "Permission Granted by user");
                     LoadEquipmentTypesTask loadEquipmentTypesTask = new LoadEquipmentTypesTask(
                             this);
-                    loadEquipmentTypesTask.execute();
+                    loadEquipmentTypesTask.execute(configFile.getPath());
                 }
                 break;
         }
