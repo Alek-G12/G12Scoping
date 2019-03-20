@@ -24,7 +24,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,6 +45,8 @@ import io.realm.Realm;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
 
+//import android.widget.ImageView;
+
 public class MainActivity extends AppCompatActivity {
     
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1;
@@ -53,13 +54,8 @@ public class MainActivity extends AppCompatActivity {
     private Set<String> types;
     private File configFile;
     
-    /**
-     * UI References
-     */
-    private FloatingActionButton mFab;
     private EditText mEquipmentName;
     private Spinner mEquipmentTypeSpinner;
-    private RecyclerView mInspectionRecyclerView;
     private Realm realm;
     private String user;
     
@@ -143,11 +139,11 @@ public class MainActivity extends AppCompatActivity {
         this.setSupportActionBar(toolbar);
         
         //Floating Button
-        mFab = findViewById(R.id.fab);
+        FloatingActionButton mFab = findViewById(R.id.fab);
         mFab.setOnClickListener(fabOnClickListener);
         
         //Inspection Recycler View
-        mInspectionRecyclerView = findViewById(R.id.inspectionRecyclerView);
+        RecyclerView mInspectionRecyclerView = findViewById(R.id.inspectionRecyclerView);
         mInspectionRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         mInspectionRecyclerView.setLayoutManager(layoutManager);
@@ -205,17 +201,19 @@ public class MainActivity extends AppCompatActivity {
         mEquipmentName = dialogView.findViewById(R.id.eamName);
         mEquipmentTypeSpinner = dialogView.findViewById(R.id.equipmentType);
         types = sharedPreferences.getStringSet("types", null);
-        ArrayAdapter<String> adapter = null;
-        List<String> listTypes = new ArrayList<>(types);
-        Collections.sort(listTypes);
-        try{
-            adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item,
-                                         listTypes);
-        } catch(NullPointerException e){
-            Log.d("EqLst", "Equipment List is null");
+        if(types != null){
+            List<String> listTypes = new ArrayList<>(types);
+            Collections.sort(listTypes);
+            try{
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                                                                  android.R.layout.simple_spinner_item,
+                                                                  listTypes);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                mEquipmentTypeSpinner.setAdapter(adapter);
+            } catch(NullPointerException e){
+                Log.d("EqLst", "Equipment List is null");
+            }
         }
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mEquipmentTypeSpinner.setAdapter(adapter);
         builder.setTitle("New Inspection").setMessage("Create a new equipment inspection").setView(
                 dialogView).setPositiveButton("Create", newInspectionDialogOnClickListener);
         return builder.create();
@@ -285,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
             private TextView dateCreated;
             private TextView nameModified;
             private TextView dateModified;
-            private ImageView inspectionIcon;
+            //private ImageView inspectionIcon;
             
             private InspectionViewHolder(View v){
                 super(v);
@@ -295,7 +293,7 @@ public class MainActivity extends AppCompatActivity {
                 dateCreated = v.findViewById(R.id.dateCreated);
                 nameModified = v.findViewById(R.id.nameModified);
                 dateModified = v.findViewById(R.id.dateModified);
-                inspectionIcon = v.findViewById(R.id.inspectionIcon);
+                //inspectionIcon = v.findViewById(R.id.inspectionIcon);
             }
         }
     }

@@ -85,18 +85,20 @@ public class SectionFragment extends Fragment {
         RecyclerView view = (RecyclerView) this.getView();
         for(int i = 0; i < mSection.getQuestions().size(); i++){
             Question question = mSection.getQuestions().get(i);
-            switch(question.getType()){
-                case Question.BOOL:
-                case Question.CHOICE:
-                    AppCompatSpinner spinner = view.getChildAt(i).findViewById(R.id.qSpinner);
-                    question.setSelectedAnswer(spinner.getSelectedItemPosition());
-                    break;
-                case Question.INPUT_NUMERIC:
-                case Question.INPUT_TEXT:
-                    EditText editText = view.getChildAt(i).findViewById(R.id.qAnswer);
-                    question.getAnswers().get(question.getSelectedAnswer()).setAnswer(
-                            editText.getText().toString());
-                    break;
+            if(question != null && view != null){
+                switch(question.getType()){
+                    case Question.BOOL:
+                    case Question.CHOICE:
+                        AppCompatSpinner spinner = view.getChildAt(i).findViewById(R.id.qSpinner);
+                        question.setSelectedAnswer(spinner.getSelectedItemPosition());
+                        break;
+                    case Question.INPUT_NUMERIC:
+                    case Question.INPUT_TEXT:
+                        EditText editText = view.getChildAt(i).findViewById(R.id.qAnswer);
+                        question.getAnswers().get(question.getSelectedAnswer()).setAnswer(
+                                editText.getText().toString());
+                        break;
+                }
             }
         }
         mListener.onSectionChange(mSection);

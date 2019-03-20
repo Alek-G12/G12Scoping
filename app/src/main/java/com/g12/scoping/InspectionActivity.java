@@ -25,9 +25,9 @@ public class InspectionActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
                    SectionFragment.OnSectionChangeListener {
     
-    private final String INSPECTION = "inspection";
-    private final String USER = "user";
-    private final String NAME = "name";
+    private static final String INSPECTION = "inspection";
+    private static final String USER = "user";
+    private static final String NAME = "name";
     
     private Realm realm = Realm.getDefaultInstance();
     
@@ -36,7 +36,6 @@ public class InspectionActivity extends AppCompatActivity
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
     
-    private Bundle extras;
     private FragmentManager fragmentManager;
     
     private int mSectionId;
@@ -47,9 +46,13 @@ public class InspectionActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inspection);
     
-        extras = this.getIntent().getExtras();
-        mInspectionName = extras.getString(INSPECTION);
-    
+        Bundle extras = this.getIntent().getExtras();
+        String user = "";
+        if(extras != null){
+            mInspectionName = extras.getString(INSPECTION);
+            user = extras.getString(USER);
+        }
+        
         fragmentManager = this.getSupportFragmentManager();
     
         mDrawerLayout = findViewById(R.id.drawer_layout);
@@ -62,7 +65,7 @@ public class InspectionActivity extends AppCompatActivity
                 R.id.headerInspectionName);
         navHeadTitle.setText(mInspectionName);
         TextView navHeadUser = mNavigationView.getHeaderView(0).findViewById(R.id.headerUser);
-        navHeadUser.setText(extras.getString(USER));
+        navHeadUser.setText(user);
         setUpActionBar();
         AddSectionsToNavView();
         initFragment();
@@ -73,8 +76,10 @@ public class InspectionActivity extends AppCompatActivity
         Toolbar = findViewById(R.id.inspectionToolBar);
         setSupportActionBar(Toolbar);
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        if(actionBar != null){
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        }
     }
     
     private void AddSectionsToNavView(){
@@ -83,7 +88,9 @@ public class InspectionActivity extends AppCompatActivity
         Inspection realmInspection = realm.where(Inspection.class).equalTo(NAME, mInspectionName)
                                           .findFirst();
         //Gets a non-managed copy from the object to pass between Threads.
-        mInspection = realm.copyFromRealm(realmInspection);
+        if(realmInspection != null){
+            mInspection = realm.copyFromRealm(realmInspection);
+        }
         Menu menu = mNavigationView.getMenu();
         int itemOrder = 0;
         for(Section section : mInspection.getSections()){
