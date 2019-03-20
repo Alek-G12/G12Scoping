@@ -4,19 +4,20 @@
         <Section name="General">
             <Question
                 name="manway_available"
-                text="Manway available?"
+                text="Manway available"
                 type="bool" />
             <Question
                 name="manway_type"
                 text="Manway type:"
                 type="choice">
-                <Answer answer="Scafold" />
+                <Answer answer="Scaffold" />
                 <Answer answer="Manlift - Drivable" />
                 <Answer answer="Manlift - towable" />
             </Question>
             <Question
                 name="additional_notes"
                 text="Additional notes"
+                dependsOn="manway_available"
                 type="input_text" />
             <Question
                 name="operating_temperature"

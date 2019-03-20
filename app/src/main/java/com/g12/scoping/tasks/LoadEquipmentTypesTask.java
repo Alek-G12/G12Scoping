@@ -1,4 +1,4 @@
-package com.g12.scoping;
+package com.g12.scoping.tasks;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Xml;
 
+import com.g12.scoping.R;
 import com.g12.scoping.models.CustomXMLParser;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -18,10 +19,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-class LoadEquipmentTypesTask extends AsyncTask<String, Void, List<String>> {
+public class LoadEquipmentTypesTask extends AsyncTask<String, Void, List<String>> {
     private WeakReference<Context> contextWeakReference;
     
-    LoadEquipmentTypesTask(Context context){
+    
+    public LoadEquipmentTypesTask(Context context){
         contextWeakReference = new WeakReference<>(context);
     }
     

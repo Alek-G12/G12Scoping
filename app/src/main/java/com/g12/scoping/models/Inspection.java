@@ -9,6 +9,7 @@ import io.realm.annotations.PrimaryKey;
 public class Inspection extends RealmObject {
     
     @PrimaryKey
+    private String id;
     private String name;
     private String equipmentType;
     private Date dateCreated;
@@ -19,7 +20,9 @@ public class Inspection extends RealmObject {
     
     public Inspection(){}
     
-    public Inspection(String equipmentType, String name, Date dateCreated, String createdBy){
+    public Inspection(String id, String equipmentType, String name, Date dateCreated,
+                      String createdBy){
+        this.id = id;
         this.equipmentType = equipmentType;
         this.name = name;
         this.dateCreated = dateCreated;
@@ -60,7 +63,6 @@ public class Inspection extends RealmObject {
     public void setModifiedBy(String modifiedBy){
         this.modifiedBy = modifiedBy;
     }
-    
     
     public RealmList<Section> getSections(){
         return sections;

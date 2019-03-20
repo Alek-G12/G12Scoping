@@ -1,13 +1,19 @@
 package com.g12.scoping.models;
 
+import java.io.Serializable;
+
 import io.realm.RealmList;
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
-public class Section extends RealmObject {
+public class Section extends RealmObject implements Serializable {
+    @PrimaryKey
+    private String id;
     private String name;
     private RealmList<Question> questions;
     
-    public Section(String name){
+    public Section(String id, String name){
+        this.id = id;
         this.name = name;
     }
     public Section(){}

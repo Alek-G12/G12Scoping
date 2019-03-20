@@ -23,4 +23,5 @@
         <item>Tank</item>
         <item>Pipe</item>
     </string-array>
+    <string name="prefix_inspection">inspection_</string>
 </resources>

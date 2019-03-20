@@ -1,4 +1,4 @@
-package com.g12.scoping;
+package com.g12.scoping.tasks;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -26,8 +26,10 @@ public class CreateInspectionTask extends AsyncTask<String, Void, Void> {
     @Override
     protected Void doInBackground(String... strings){
         Realm realm = Realm.getDefaultInstance();
-        
-        Inspection inspection = new Inspection(strings[0], strings[1], new Date(), strings[2]);
+        long order = realm.where(Inspection.class).count();
+    
+        String id = "i".concat(String.valueOf(order));
+        Inspection inspection = new Inspection(id, strings[0], strings[1], new Date(), strings[2]);
         File configFile = new File(strings[3]);
         
         try(FileInputStream inputStream = new FileInputStream(configFile)){
@@ -36,7 +38,7 @@ public class CreateInspectionTask extends AsyncTask<String, Void, Void> {
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
             parser.setInput(inputStream, null);
     
-            inspection.setSections(parseEquipment(parser));
+            inspection.setSections(parseEquipment(parser, id, inspection.getEquipmentType()));
     
             realm.beginTransaction();
             realm.insert(inspection);
@@ -53,7 +55,7 @@ public class CreateInspectionTask extends AsyncTask<String, Void, Void> {
         return null;
     }
     
-    private RealmList<Section> parseEquipment(XmlPullParser parser)
+    private RealmList<Section> parseEquipment(XmlPullParser parser, String id, String type)
             throws XmlPullParserException, IOException, QuestionTypeException{
         parser.nextTag();
         parser.require(XmlPullParser.START_TAG, null, "Inspection");
@@ -61,10 +63,11 @@ public class CreateInspectionTask extends AsyncTask<String, Void, Void> {
         while(parser.next() != XmlPullParser.END_DOCUMENT){
             if(parser.getEventType() != XmlPullParser.START_TAG) continue;
             if(!parser.getName().equals("Equipment")) continue;
+            if(!parser.getAttributeValue(null, "type").equals(type)) continue;
             Log.d("Parser", "Requested Equipment Found in XML");
             while(!(parser.nextTag() == XmlPullParser.END_TAG && parser.getName().equals(
                     "Equipment"))){
-                Section section = parseSection(parser);
+                Section section = parseSection(parser, id, sections.size());
                 sections.add(section);
             }
             break; // No need to parse other equipments.
@@ -72,54 +75,73 @@ public class CreateInspectionTask extends AsyncTask<String, Void, Void> {
         return sections;
     }
     
-    private Section parseSection(XmlPullParser parser)
+    private Section parseSection(XmlPullParser parser, String id, int order)
             throws XmlPullParserException, IOException, QuestionTypeException{
+        id = id.concat("s").concat(String.valueOf(order));
         parser.require(XmlPullParser.START_TAG, null, "Section");
         if(parser.isEmptyElementTag()) parser.nextTag();
-        Section section = new Section(parser.getAttributeValue(null, "name"));
+        Section section = new Section(id, parser.getAttributeValue(null, "name"));
         Log.d("Parser", "Found Section " + section.getName());
         RealmList<Question> questions = new RealmList<>();
         while(!(parser.nextTag() == XmlPullParser.END_TAG && parser.getName().equals("Section"))){
-            Question question = parseQuestion(parser);
+            Question question = parseQuestion(parser, id, questions.size());
             questions.add(question);
         }
         section.setQuestions(questions);
         return section;
     }
     
-    private Question parseQuestion(XmlPullParser parser)
+    private Question parseQuestion(XmlPullParser parser, String id, int order)
             throws XmlPullParserException, IOException, QuestionTypeException{
+        id = id.concat("q").concat(String.valueOf(order));
         parser.require(XmlPullParser.START_TAG, null, "Question");
         if(parser.isEmptyElementTag()) parser.nextTag();
-        Question question = new Question(Question.parseType(parser.getAttributeValue(null, "type")),
-                                         parser.getAttributeValue(null, "name"),
-                                         parser.getAttributeValue(null, "text"));
+        Question question;
+        int type = Question.parseType(parser.getAttributeValue(null, "type"));
+        String dependency = parser.getAttributeValue(null, "dependsOn");
+        String name = parser.getAttributeValue(null, "name");
+        String text = parser.getAttributeValue(null, "text");
+        if(dependency == null){
+            question = new Question(id, type, name, text, null);
+        } else {
+            RealmList<String> dependsOn = new RealmList<>();
+            String[] dependencyString = dependency.split(",");
+            for(String string : dependencyString){
+                dependsOn.add(string.trim());
+            }
+            question = new Question(id, type, name, text, dependsOn);
+        }
+        
         Log.d("Parser", "Found Question " + question.getName());
-        RealmList<Answer> answers;
+        
+        RealmList<Answer> answers = new RealmList<>();
         switch(question.getType()){
             case Question.BOOL:
-                answers = new RealmList<>(new Answer("Yes"), new Answer("No"));
+                answers = new RealmList<>(new Answer(id.concat("a0"), "No"),
+                                          new Answer(id.concat("a1"), "Yes"));
                 break;
             case Question.CHOICE:
-                answers = new RealmList<>();
                 while(!(parser.nextTag() == XmlPullParser.END_TAG && parser.getName().equals(
                         "Question"))){
-                    Answer answer = parseAnswer(parser);
+                    Answer answer = parseAnswer(parser, id, answers.size());
                     answers.add(answer);
                 }
                 break;
-            default:
-                answers = null;
+            case Question.INPUT_TEXT:
+            case Question.INPUT_NUMERIC:
+                answers = new RealmList<>(new Answer(id.concat("a0"), ""));
                 break;
         }
         question.setAnswers(answers);
         return question;
     }
     
-    private Answer parseAnswer(XmlPullParser parser) throws IOException, XmlPullParserException{
+    private Answer parseAnswer(XmlPullParser parser, String id, int order)
+            throws IOException, XmlPullParserException{
+        id = id.concat("a").concat(String.valueOf(order));
         parser.require(XmlPullParser.START_TAG, null, "Answer");
         if(parser.isEmptyElementTag()) parser.nextTag();
-        Answer answer = new Answer(parser.getAttributeValue(null, "answer"));
+        Answer answer = new Answer(id, parser.getAttributeValue(null, "answer"));
         Log.d("Parser", "Found Answer " + answer.getAnswer());
         return answer;
     }

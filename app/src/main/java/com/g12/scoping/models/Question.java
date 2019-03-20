@@ -5,6 +5,7 @@ import java.util.List;
 
 import io.realm.RealmList;
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  * This Class has two constructors.
@@ -16,18 +17,26 @@ import io.realm.RealmObject;
 public class Question extends RealmObject {
     public static final int BOOL = 0, CHOICE = 1, INPUT_TEXT = 2, INPUT_NUMERIC = 3;
     
-    private int type;
+    @PrimaryKey
+    private String id;
     private String name;
+    private int type;
     private String text;
     private RealmList<Answer> answers;
-    private Integer selectedAnswer;
+    private RealmList<String> dependsOn;
+    private int selectedAnswer;
+    private boolean isActive;
     
     public Question(){}
     
-    public Question(int type, String name, String text){
+    public Question(String id, int type, String name, String text, RealmList<String> dependsOn){
+        this.id = id;
         this.type = type;
         this.name = name;
         this.text = text;
+        this.dependsOn = dependsOn;
+        this.isActive = dependsOn != null;
+        this.selectedAnswer = 0;
     }
     
     
@@ -74,10 +83,21 @@ public class Question extends RealmObject {
         }
     }
     
+    public RealmList<String> getDependsOn(){
+        return dependsOn;
+    }
+    
     public static class QuestionTypeException extends Exception {
         QuestionTypeException(String message){
             super(message);
         }
     }
     
+    public boolean isActive(){
+        return isActive;
+    }
+    
+    public void setActive(boolean active){
+        isActive = active;
+    }
 }

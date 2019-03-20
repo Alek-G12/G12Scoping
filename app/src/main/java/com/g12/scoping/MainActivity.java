@@ -16,6 +16,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -29,6 +30,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.g12.scoping.models.Inspection;
+import com.g12.scoping.tasks.CreateInspectionTask;
+import com.g12.scoping.tasks.LoadEquipmentTypesTask;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -58,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private Spinner mEquipmentTypeSpinner;
     private RecyclerView mInspectionRecyclerView;
     private Realm realm;
+    private String user;
     
     /**
      * OnClick Listeners implementations
@@ -102,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
                                                       Context.MODE_PRIVATE);
         configFile = new File(Environment
                                       .getExternalStorageDirectory() + File.separator + "Scoping" + File.separator + "questions.xml");
-    
+        user = sharedPreferences.getString("user", null);
         //Kick off the Login Activity if no active session
         if(!sharedPreferences.getBoolean("active", false)){
             Intent loginIntent = new Intent(this, LoginActivity.class);
@@ -134,6 +138,10 @@ public class MainActivity extends AppCompatActivity {
      * Set the User Interface, register onClickListeners, etc...
      */
     private void initUI(){
+        //Toolbar
+        Toolbar toolbar = findViewById(R.id.mainToolbar);
+        this.setSupportActionBar(toolbar);
+        
         //Floating Button
         mFab = findViewById(R.id.fab);
         mFab.setOnClickListener(fabOnClickListener);
@@ -198,11 +206,11 @@ public class MainActivity extends AppCompatActivity {
         mEquipmentTypeSpinner = dialogView.findViewById(R.id.equipmentType);
         types = sharedPreferences.getStringSet("types", null);
         ArrayAdapter<String> adapter = null;
-        List listTypes = new ArrayList<>(types);
+        List<String> listTypes = new ArrayList<>(types);
         Collections.sort(listTypes);
         try{
-            adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,
-                                               listTypes);
+            adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item,
+                                         listTypes);
         } catch(NullPointerException e){
             Log.d("EqLst", "Equipment List is null");
         }
@@ -214,11 +222,9 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void createInspection(String name, String type){
-        //Build Inspection Object
-        String createdBy = sharedPreferences.getString("user", null);
         //Start Async Task to Create Inspection model and sub models from XML
         CreateInspectionTask createInspectionTask = new CreateInspectionTask();
-        createInspectionTask.execute(type, name, createdBy, configFile.getPath());
+        createInspectionTask.execute(type, name, user, configFile.getPath());
         Log.d("DB", "Inspection Entry created");
         
     }
@@ -237,8 +243,7 @@ public class MainActivity extends AppCompatActivity {
         public InspectionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType){
             View view = LayoutInflater.from(parent.getContext()).inflate(
                     R.layout.inspection_list_item, parent, false);
-            InspectionViewHolder viewHolder = new InspectionViewHolder(view);
-            return viewHolder;
+            return new InspectionViewHolder(view);
         }
         
         @Override
@@ -256,15 +261,13 @@ public class MainActivity extends AppCompatActivity {
             holder.dateCreated.setText(sdf.format(inspection.getDateCreated()));
             holder.nameModified.setText(inspection.getModifiedBy());
             holder.dateModified.setText(sdf.format(inspection.getDateModified()));
-            final String inspectionName = inspection.getName();
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v){
                     Intent intent = new Intent(MainActivity.this, InspectionActivity.class);
-                    Toast.makeText(MainActivity.this, "Opening Inspection - " + inspectionName,
-                                   Toast.LENGTH_SHORT).show();
                     //TODO: Add Intent Extras needed for Inspection Activity
                     intent.putExtra("inspection", inspection.getName());
+                    intent.putExtra("user", user);
                     startActivity(intent);
                 }
             });
