@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
 
@@ -96,6 +97,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     
         Realm.init(this);
+        RealmConfiguration configuration = new RealmConfiguration.Builder()
+                .deleteRealmIfMigrationNeeded().build();
+        Realm.setDefaultConfiguration(configuration);
         realm = Realm.getDefaultInstance();
     
         sharedPreferences = this.getSharedPreferences(getString(R.string.preferencesFileKey),
@@ -263,7 +267,6 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v){
                     Intent intent = new Intent(MainActivity.this, InspectionActivity.class);
-                    //TODO: Add Intent Extras needed for Inspection Activity
                     intent.putExtra("inspection", inspection.getName());
                     intent.putExtra("user", user);
                     startActivity(intent);

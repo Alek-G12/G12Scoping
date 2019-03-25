@@ -18,6 +18,10 @@ public class Section extends RealmObject implements Serializable {
     }
     public Section(){}
     
+    public String getId(){
+        return id;
+    }
+    
     public String getName(){
         return name;
     }

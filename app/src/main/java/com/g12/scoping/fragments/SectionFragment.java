@@ -73,8 +73,7 @@ public class SectionFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(
-                    new QuestionRecyclerViewAdapter(mSection.getQuestions(), mListener));
+            recyclerView.setAdapter(new QuestionRecyclerViewAdapter(mSection, mListener));
         }
         return view;
     }
@@ -90,12 +89,12 @@ public class SectionFragment extends Fragment {
                     case Question.BOOL:
                     case Question.CHOICE:
                         AppCompatSpinner spinner = view.getChildAt(i).findViewById(R.id.qSpinner);
-                        question.setSelectedAnswer(spinner.getSelectedItemPosition());
+                        question.setSelectedAnswerId(spinner.getSelectedItemPosition());
                         break;
                     case Question.INPUT_NUMERIC:
                     case Question.INPUT_TEXT:
                         EditText editText = view.getChildAt(i).findViewById(R.id.qAnswer);
-                        question.getAnswers().get(question.getSelectedAnswer()).setAnswer(
+                        question.getAnswers().get(question.getSelectedAnswerId()).setAnswer(
                                 editText.getText().toString());
                         break;
                 }

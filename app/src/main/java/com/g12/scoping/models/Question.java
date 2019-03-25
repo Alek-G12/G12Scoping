@@ -15,7 +15,7 @@ import io.realm.annotations.PrimaryKey;
  */
 
 public class Question extends RealmObject {
-    public static final int BOOL = 0, CHOICE = 1, INPUT_TEXT = 2, INPUT_NUMERIC = 3;
+    public static final int BOOL = 0, CHOICE = 1, INPUT_TEXT = 2, INPUT_NUMERIC = 3, PHOTO = 4;
     
     @PrimaryKey
     private String id;
@@ -24,7 +24,7 @@ public class Question extends RealmObject {
     private String text;
     private RealmList<Answer> answers;
     private RealmList<String> dependsOn;
-    private int selectedAnswer;
+    private int selectedAnswerId;
     private boolean isActive;
     
     public Question(){}
@@ -36,9 +36,13 @@ public class Question extends RealmObject {
         this.text = text;
         this.dependsOn = dependsOn;
         this.isActive = dependsOn != null;
-        this.selectedAnswer = 0;
+        this.selectedAnswerId = 0;
     }
     
+    
+    public String getId(){
+        return id;
+    }
     
     public int getType(){
         return type;
@@ -60,12 +64,16 @@ public class Question extends RealmObject {
         this.answers = answers;
     }
     
-    public int getSelectedAnswer(){
-        return selectedAnswer;
+    public int getSelectedAnswerId(){
+        return selectedAnswerId;
     }
     
-    public void setSelectedAnswer(int selectedAnswer){
-        this.selectedAnswer = selectedAnswer;
+    public void setSelectedAnswerId(int selectedAnswerId){
+        this.selectedAnswerId = selectedAnswerId;
+    }
+    
+    public String getSelectedAnswerValue(){
+        return answers.get(selectedAnswerId).getAnswer();
     }
     
     public static int parseType(String type) throws QuestionTypeException{
@@ -78,6 +86,8 @@ public class Question extends RealmObject {
                 return INPUT_TEXT;
             case "input_numeric":
                 return INPUT_NUMERIC;
+            case "photo":
+                return PHOTO;
             default:
                 throw new QuestionTypeException("Wrong Question Type");
         }

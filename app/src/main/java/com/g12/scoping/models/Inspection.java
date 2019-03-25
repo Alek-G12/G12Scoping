@@ -32,6 +32,10 @@ public class Inspection extends RealmObject {
         this.modifiedBy = createdBy;
     }
     
+    public String getId(){
+        return id;
+    }
+    
     public String getEquipmentType(){
         return equipmentType;
     }

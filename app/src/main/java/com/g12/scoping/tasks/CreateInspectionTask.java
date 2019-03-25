@@ -131,6 +131,9 @@ public class CreateInspectionTask extends AsyncTask<String, Void, Void> {
             case Question.INPUT_NUMERIC:
                 answers = new RealmList<>(new Answer(id.concat("a0"), ""));
                 break;
+            case Question.PHOTO:
+                answers = null;
+                break;
         }
         question.setAnswers(answers);
         return question;

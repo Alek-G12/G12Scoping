@@ -17,8 +17,13 @@
             <Question
                 name="additional_notes"
                 text="Additional notes"
-                dependsOn="manway_available"
+                dependsOn="manway_available:Yes|maybe"
                 type="input_text" />
+            <Question
+                name="manway_photos"
+                text="Manway Photos"
+                dependsOn="manway_available:Yes"
+                type="photo" />
             <Question
                 name="operating_temperature"
                 text="Operating Temperature"

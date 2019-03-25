@@ -150,3 +150,6 @@ public class InspectionActivity extends AppCompatActivity
     }
     
 }
+
+//TODO: New Fragments and hence Recycler Adapters should be created in a separate thread
+//TODO: Update the UI when there's a change in a question
