@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified"
+    elementFormDefault="qualified"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="com.g12.scoping">
+
+    <xs:element
+        name="Inspection"
+        type="InspectionType" />
+
+    <xs:complexType
+        name="QuestionType"
+        mixed="true">
+        <xs:sequence>
+            <xs:element
+                type="AnswerType"
+                name="Answer"
+                maxOccurs="unbounded"
+                minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute
+            ref="name"
+            use="required" />
+        <xs:attribute
+            type="xs:string"
+            name="text"
+            use="required" />
+        <xs:attribute
+            ref="type"
+            use="required" />
+        <xs:attribute
+            ref="subQuestions"
+            use="optional" />
+    </xs:complexType>
+
+    <xs:complexType name="AnswerType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute
+                    type="xs:string"
+                    name="answer"
+                    use="required" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType
+        name="SectionType"
+        mixed="true">
+        <xs:sequence>
+            <xs:element
+                type="QuestionType"
+                name="Question"
+                maxOccurs="unbounded"
+                minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute
+            type="xs:string"
+            name="name"
+            use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="EquipmentType">
+        <xs:sequence>
+            <xs:element
+                type="SectionType"
+                name="Section"
+                maxOccurs="unbounded"
+                minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute
+            type="xs:string"
+            name="type"
+            use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="InspectionType">
+        <xs:sequence>
+            <xs:element
+                type="EquipmentType"
+                name="Equipment"
+                maxOccurs="unbounded"
+                minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:attribute name="type">
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+                <xs:enumeration value="bool" />
+                <xs:enumeration value="choice" />
+                <xs:enumeration value="input_text" />
+                <xs:enumeration value="input_numeric" />
+                <xs:enumeration value="photo" />
+                <xs:enumeration value="location" />
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:attribute>
+
+    <xs:attribute name="name">
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+                <xs:pattern value="[a-z]+[a-z_0-9]*" />
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:attribute>
+
+    <xs:attribute name="subQuestions">
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+                <xs:pattern value="[a-z_0-9]+:[A-Za-z_0-9]+" />
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:attribute>
+
+</xs:schema>
