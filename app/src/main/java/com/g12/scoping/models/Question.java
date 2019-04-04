@@ -15,7 +15,7 @@ import io.realm.annotations.PrimaryKey;
  */
 
 public class Question extends RealmObject {
-    public static final int BOOL = 0, CHOICE = 1, INPUT_TEXT = 2, INPUT_NUMERIC = 3, PHOTO = 4;
+    public static final int BOOL = 0, CHOICE = 1, INPUT_TEXT = 2, INPUT_NUMERIC = 3, PHOTO = 4, LOCATION = 5;
     
     @PrimaryKey
     private String id;
@@ -23,20 +23,20 @@ public class Question extends RealmObject {
     private int type;
     private String text;
     private RealmList<Answer> answers;
-    private RealmList<String> dependsOn;
-    private int selectedAnswerId;
+    private RealmList<String> subQuestions;
+    private int selected;
     private boolean isActive;
     
     public Question(){}
     
-    public Question(String id, int type, String name, String text, RealmList<String> dependsOn){
+    public Question(String id, int type, String name, String text, RealmList<String> subQuestions){
         this.id = id;
         this.type = type;
         this.name = name;
         this.text = text;
-        this.dependsOn = dependsOn;
-        this.isActive = dependsOn != null;
-        this.selectedAnswerId = 0;
+        this.subQuestions = subQuestions;
+        this.isActive = subQuestions != null;
+        this.selected = 0;
     }
     
     
@@ -64,16 +64,16 @@ public class Question extends RealmObject {
         this.answers = answers;
     }
     
-    public int getSelectedAnswerId(){
-        return selectedAnswerId;
+    public int getSelected(){
+        return selected;
     }
     
-    public void setSelectedAnswerId(int selectedAnswerId){
-        this.selectedAnswerId = selectedAnswerId;
+    public void setSelected(int selected){
+        this.selected = selected;
     }
     
     public String getSelectedAnswerValue(){
-        return answers.get(selectedAnswerId).getAnswer();
+        return answers.get(selected).getAnswer();
     }
     
     public static int parseType(String type) throws QuestionTypeException{
@@ -93,8 +93,8 @@ public class Question extends RealmObject {
         }
     }
     
-    public RealmList<String> getDependsOn(){
-        return dependsOn;
+    public RealmList<String> getSubQuestions(){
+        return subQuestions;
     }
     
     public static class QuestionTypeException extends Exception {

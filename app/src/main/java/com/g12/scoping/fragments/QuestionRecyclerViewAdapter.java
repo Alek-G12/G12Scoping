@@ -56,7 +56,6 @@ public class QuestionRecyclerViewAdapter
                         R.layout.view_question_choice, parent, false);
                 return new ChoiceQuestionViewHolder(view);
             case Question.INPUT_TEXT:
-            default:
                 view = LayoutInflater.from(parent.getContext()).inflate(R.layout.view_question_text,
                                                                         parent, false);
                 return new TextQuestionViewHolder(view);
@@ -68,6 +67,14 @@ public class QuestionRecyclerViewAdapter
                 view = LayoutInflater.from(parent.getContext()).inflate(
                         R.layout.view_question_photo, parent, false);
                 return new PhotoQuestionViewHolder(view);
+            case Question.LOCATION:
+                view = LayoutInflater.from(parent.getContext()).inflate(
+                        R.layout.view_question_location, parent, false);
+                return new LocationQuestionViewHolder(view);
+            default:
+                view = LayoutInflater.from(parent.getContext()).inflate(
+                        R.layout.view_question_generic, parent, false);
+                return new GenericQuestionViewHolder(view);
         }
     }
     
@@ -77,7 +84,7 @@ public class QuestionRecyclerViewAdapter
         Question question = questions.get(position);
         holder.qText.setText(question.getText());
         //Common text field for all question types
-        boolean active = isQuestionActive(question);
+        boolean active = true; //isQuestionActive(question);
         switch(question.getType()){
             case Question.BOOL:
                 BooleanQuestionViewHolder booleanHolder = (BooleanQuestionViewHolder) holder;
@@ -101,6 +108,7 @@ public class QuestionRecyclerViewAdapter
                 numericHolder.qAnswer.setEnabled(active);
                 numericHolder.qAnswer.setText(question.getAnswers().get(0).getAnswer());
                 break;
+    
             case Question.PHOTO:
                 PhotoQuestionViewHolder photoHolder = (PhotoQuestionViewHolder) holder;
                 photoHolder.photoButton.setEnabled(active);
@@ -111,18 +119,9 @@ public class QuestionRecyclerViewAdapter
                     }
                 });
                 break;
+            //TODO: Implement Location View
         }
         
-        holder.mView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v){
-                if(null != mListener){
-                    // Notify the active callbacks interface (the activity, if the
-                    // fragment is attached to one) that an item has been selected.
-                    //mListener.onListFragmentInteraction(holder.mItem);
-                }
-            }
-        });
     }
     
     @Override
@@ -131,10 +130,10 @@ public class QuestionRecyclerViewAdapter
     }
     
     private boolean isQuestionActive(Question question){
-        if(question.getDependsOn() == null) return true;
+        if(question.getSubQuestions() == null) return true;
         
         Realm realm = Realm.getDefaultInstance();
-        for(String depends : question.getDependsOn()){
+        for(String depends : question.getSubQuestions()){
             try{
                 String[] qa = depends.split(":", 2);
                 Section realmSection = realm.where(Section.class).equalTo("id", section.getId())
@@ -171,7 +170,7 @@ public class QuestionRecyclerViewAdapter
         }
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
-        spinner.setSelection(question.getSelectedAnswerId());
+        spinner.setSelection(question.getSelected());
     }
     
     static class GenericQuestionViewHolder extends RecyclerView.ViewHolder {
@@ -186,7 +185,7 @@ public class QuestionRecyclerViewAdapter
         
     }
     
-    public static class BooleanQuestionViewHolder extends GenericQuestionViewHolder {
+    private static class BooleanQuestionViewHolder extends GenericQuestionViewHolder {
         final AppCompatSpinner qSpinner;
         
         BooleanQuestionViewHolder(View view){
@@ -195,7 +194,7 @@ public class QuestionRecyclerViewAdapter
         }
     }
     
-    public static class ChoiceQuestionViewHolder extends GenericQuestionViewHolder {
+    private static class ChoiceQuestionViewHolder extends GenericQuestionViewHolder {
         final AppCompatSpinner qSpinner;
         
         ChoiceQuestionViewHolder(View view){
@@ -204,7 +203,7 @@ public class QuestionRecyclerViewAdapter
         }
     }
     
-    public static class TextQuestionViewHolder extends GenericQuestionViewHolder {
+    private static class TextQuestionViewHolder extends GenericQuestionViewHolder {
         final EditText qAnswer;
         
         TextQuestionViewHolder(View view){
@@ -213,7 +212,7 @@ public class QuestionRecyclerViewAdapter
         }
     }
     
-    public static class NumericQuestionViewHolder extends GenericQuestionViewHolder {
+    private static class NumericQuestionViewHolder extends GenericQuestionViewHolder {
         final EditText qAnswer;
         
         NumericQuestionViewHolder(View view){
@@ -222,7 +221,7 @@ public class QuestionRecyclerViewAdapter
         }
     }
     
-    public static class PhotoQuestionViewHolder extends GenericQuestionViewHolder {
+    private static class PhotoQuestionViewHolder extends GenericQuestionViewHolder {
         final Button photoButton;
         
         PhotoQuestionViewHolder(View view){
@@ -231,5 +230,12 @@ public class QuestionRecyclerViewAdapter
         }
     }
     
-    
+    private static class LocationQuestionViewHolder extends GenericQuestionViewHolder {
+        final Button locationButton;
+        
+        LocationQuestionViewHolder(View view){
+            super(view);
+            locationButton = view.findViewById(R.id.location_button);
+        }
+    }
 }
