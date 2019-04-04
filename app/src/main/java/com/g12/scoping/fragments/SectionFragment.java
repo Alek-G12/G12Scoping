@@ -89,12 +89,12 @@ public class SectionFragment extends Fragment {
                     case Question.BOOL:
                     case Question.CHOICE:
                         AppCompatSpinner spinner = view.getChildAt(i).findViewById(R.id.qSpinner);
-                        question.setSelectedAnswerId(spinner.getSelectedItemPosition());
+                        question.setSelected(spinner.getSelectedItemPosition());
                         break;
                     case Question.INPUT_NUMERIC:
                     case Question.INPUT_TEXT:
                         EditText editText = view.getChildAt(i).findViewById(R.id.qAnswer);
-                        question.getAnswers().get(question.getSelectedAnswerId()).setAnswer(
+                        question.getAnswers().get(question.getSelected()).setAnswer(
                                 editText.getText().toString());
                         break;
                 }
