@@ -1,41 +1,203 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Inspection>
+<Inspection xmlns="com.g12.scoping"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:SchemaLocation="/xml/inspection.xsd">
     <Equipment type="Tank">
-        <Section name="General">
+        <Section name="Location">
             <Question
-                name="manway_available"
-                text="Manway available"
-                type="bool" />
-            <Question
-                name="manway_type"
-                text="Manway type:"
+                name="field"
+                text="Field:"
                 type="choice">
-                <Answer answer="Scaffold" />
-                <Answer answer="Manlift - Drivable" />
-                <Answer answer="Manlift - towable" />
+                <Answer answer="Coalinga" />
+                <Answer answer="Cymric" />
+                <Answer answer="Kern River" />
+                <Answer answer="Lost Hills" />
+                <Answer answer="Midway Sunset" />
+                <Answer answer="San Ardo" />
             </Question>
             <Question
-                name="additional_notes"
-                text="Additional notes"
-                dependsOn="manway_available:Yes|maybe"
+                name="lease"
+                text="Lease:"
+                type="choice">
+                <Answer answer="Other Lease" />
+                <Answer answer="COALINGA ASSOCIATES THERMAL" />
+                <Answer answer="SECTION 31A" />
+                <Answer answer="SECTION 31A GUTHRIE" />
+                <Answer answer="SECTION 31A GUTHRIE FEE" />
+            </Question>
+            <Question
+                name="work_order"
+                text="Work Order:"
                 type="input_text" />
             <Question
-                name="manway_photos"
-                text="Manway Photos"
-                dependsOn="manway_available:Yes"
-                type="photo" />
+                name="cost_code"
+                text="Cost Code:"
+                type="input_text" />
             <Question
-                name="operating_temperature"
-                text="Operating Temperature"
-                type="input_numeric" />
+                name="facility"
+                text="Facility:"
+                type="input_text" />
+            <Question
+                name="location"
+                text="Location"
+                type="location" />
         </Section>
-        <Section name="Insulation">
+        <Section name="In Service">
+            <Question
+                name="removed"
+                text="Removed From Site?"
+                type="bool" />
+            <Question
+                name="in_service"
+                text="In Service:"
+                type="choice">
+                <Answer answer="In Service" />
+                <Answer answer="Out Of Service (OOS)" />
+            </Question>
+        </Section>
+        <Section name="General / External">
+            <Question
+                name="immediate_concern"
+                text="Immediate Concern?"
+                type="bool" />
+            <Question
+                name="tank_bolted_welded"
+                text="Tank bolted or welded:"
+                type="choice">
+                <Answer answer="None" />
+                <Answer answer="Bolted" />
+                <Answer answer="Welded" />
+            </Question>
+            <Question
+                name="temperature"
+                text="Operating Temperature (fahrenheit):"
+                type="input_numeric" />
+            <Question
+                name="clean_out"
+                text="Clean out:"
+                type="bool" />
+            <Question
+                name="orientation"
+                text="Orientation"
+                type="choice">
+                <Answer answer="Horizontal" />
+                <Answer answer="Vertical" />
+            </Question>
+            <Question
+                name="foundation_type"
+                text="Foundation type:"
+                type="choice">
+                <Answer answer="Gravel" />
+                <Answer answer="Concrete" />
+            </Question>
+            <Question
+                name="shell_diameter"
+                text="Shell Diameter (feet):"
+                type="input_numeric" />
+            <Question
+                name="shell_height"
+                text="Shell Height (feet):"
+                type="input_numeric" />
+            <Question
+                name="means_of_access"
+                text="Means of access required?"
+                type="bool" />
+            <Question
+                name="manlift"
+                text="Manlift"
+                type="bool"
+                subQuestions="means_of_access:yes" />
+            <Question
+                name="scaffold"
+                text="Scaffold"
+                type="bool"
+                subQuestions="means_of_access:yes" />
+            <Question
+                name="manlift"
+                text="Manlift"
+                type="bool"
+                subQuestions="means_of_access:yes" />
+            <Question
+                name="ladder"
+                text="Ladder"
+                type="bool"
+                subQuestions="means_of_access:yes" />
+            <Question
+                name="space_available"
+                text="Space Available?"
+                type="bool"
+                subQuestions="means_of_access:yes" />
+            <Question
+                name="space_available_note"
+                text="(Space Available) notes:"
+                type="input_text"
+                subQuestions="means_of_access:yes,space_available:yes" />
+            <Question
+                name="manway"
+                text="Manway?"
+                type="bool" />
+            <Question
+                name="manway_diameter"
+                text="Manway Diameter (feet):"
+                type="input_text"
+                subQuestions="manway:yes" />
+            <Question
+                name="manway_orientation"
+                text="Manway Orientation"
+                type="choice"
+                subQuestions="manway:yes">
+                <Answer answer="Side" />
+                <Answer answer="Roof" />
+            </Question>
+            <Question
+                name="access_scaffold_manlift"
+                text="Access Scaffold/Manlift?"
+                type="choice">
+                <Answer answer="None" />
+                <Answer answer="Scaffold" />
+                <Answer answer="Manlift - Towable" />
+                <Answer answer="Manlift - Drivable" />
+            </Question>
+            <Question
+                name="rafters"
+                text="Rafters:"
+                type="choice">
+                <Answer answer="N/A" />
+                <Answer answer="External" />
+            </Question>
+            <Question
+                name="roof_insulated"
+                text="Roof Insulated?"
+                type="bool" />
+            <Question
+                name="roof_accesible"
+                text="Roof Accessible?"
+                type="bool" />
+            <Question
+                name="floor_type"
+                text="Floor Type"
+                type="choice">
+                <Answer answer="N/A" />
+                <Answer answer="Cone Bottom" />
+            </Question>
+            <Question
+                name="high_low_points_identified"
+                text="High and Low points identified on Off-Plot?"
+                type="bool" />
+            <Question
+                name="high_point_count"
+                text="High point count"
+                type="input_numeric"
+                subQuestions="high_low_points_identified:yes" />
+            <Question
+                name="low_point_count"
+                text="Low point count"
+                type="input_numeric"
+                subQuestions="high_low_points_identified:yes" />
         </Section>
     </Equipment>
     <Equipment type="Vessel">
         <Section name="Data Plate">
-            <Question>
-            </Question>
         </Section>
     </Equipment>
     <Equipment type="Air Receiver">
